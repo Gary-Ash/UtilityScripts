@@ -6,7 +6,7 @@
 #
 # Author   :  Gary Ash <gary.ash@icloud.com>
 # Created  :  28-Apr-2024  10:00pm
-# Modified :
+# Modified :  24-May-2024  7:02pm
 #
 # Copyright © 2024 By Gary Ash All rights reserved.
 #*****************************************************************************************
@@ -259,7 +259,8 @@ our @plistKeysToDelete = (
     "IDEProvisioningTeamManagerLastSelectedTeamID",                   "BKRecentsLastCleared",                                          "BKPreviouslyOpenedBookIDs",                                                                                             "RecentMoveAndCopyDestinations",
     "DownloadsFolderListViewSettingsVersion",                         "recent_viewed",                                                 "RecentsArrangeGroupViewBy",                                                                                             "IDEAppChooserRecentApplications-My Mac",
     "RecentRegions",                                                  "IDEFileTemplateChooserAssistantSelectedTemplateName_macOS",     "lastSource",                                                                                                            "lastReplacement",
-    "lastRegex",                                                      "TSARecentOpenedDocumentTimestamps",                             "TSAOpenedTemplates.Numbers",                                                                                            "TSAOpenedTemplates.Pages"
+    "lastRegex",                                                      "TSARecentOpenedDocumentTimestamps",     			               "TSAOpenedTemplates.Numbers",
+    "RecentItemsData",                                                                                        "TSAOpenedTemplates.Pages"
 );
 
 our @itemsToDelete = (
@@ -279,7 +280,7 @@ our @itemsToDelete = (
     ["$HOME/.subversion",                                                                                                                 0],
     ["$HOME/.node_modules",                                                                                                               0],
     ["$HOME/.android/",                                                                                                                   0],
-    ["$HOME/.cache/zsh",                                                                                                                  0],
+    ["$HOME/.cache/",                                                                                                                     0],
     ["$HOME/.bash_history",                                                                                                               0],
     ["$HOME/.python_history",                                                                                                             0],
     ["$HOME/.zcompcache",                                                                                                                 0],
@@ -438,7 +439,7 @@ plists();
 deleteFilesAndFolders();
 xcode();
 sublimeText();
-sublimeMerge();
+#sublimeMerge();
 
 #*****************************************************************************************
 # Books

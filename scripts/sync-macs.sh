@@ -7,7 +7,7 @@
 #
 # Author   :  Gary Ash <gary.ash@icloud.com>
 # Created  :  28-Apr-2024  10:00pm
-# Modified :
+# Modified :  25-May-2024  8:19pm
 #
 # Copyright © 2024 By Gary Ash All rights reserved.
 #*****************************************************************************************
@@ -74,6 +74,8 @@ sync() {
 		remote="$USER@$computer"
 		if [ "$me" != "$computer" ]; then
 			sshpass -p "$password" rsync -arz -E --rsh=ssh "$HOME/Downloads/bundles.txt" "$remote:$HOME/Downloads/bundles.txt" &>/dev/null
+			rm -f "$HOME/Downloads/bundles.txt" &>/dev/null
+
 			sshpass -p "$password" ssh -t "$remote" "echo $password | sudo -S chmod -R 777 /Applications/*" &>/dev/null
 			sshpass -p "$password" ssh "$remote" "export PATH=\"$PATH\";brew bundle --force --no-lock --file=$HOME/Downloads/bundles.txt &> /dev/null" &>/dev/null
 			sshpass -p "$password" ssh "$remote" "export PATH=\"$PATH\";brew bundle cleanup --force --file=$HOME/Downloads/bundles.txt &> /dev/null" &>/dev/null
@@ -208,6 +210,7 @@ sync() {
 				--exclude="/DerivedData" \
 				--exclude="/DocumentationIndex" \
 				--exclude="/DocumentationCache" \
+				--delete \
 				"$HOME/Library/Developer/Xcode/" "$remote:$HOME/Library/Developer/Xcode/" &>/dev/null
 
 			sshpass -p "$password" rsync -arz -E --rsh=ssh \
@@ -219,15 +222,7 @@ sync() {
 				"$HOME/Library/Application Support/Sublime Text" \
 				"$remote:$HOME/Library/Application\\ Support/" &>/dev/null
 
-			sshpass -p "$password" rsync -arz -E --rsh=ssh \
-				--exclude="Cache" \
-				--exclude="User/oscrypto-ca-bundle.crt" \
-				--delete \
-				"$HOME/Library/Application Support/Sublime Merge" \
-				"$remote:$HOME/Library/Application\\ Support/" &>/dev/null
-
 			sshpass -p "$password" ssh -t "$remote" "echo $password | sudo -S killall Dock" &>/dev/null
-			rm -f "$HOME/Downloads/bundles.txt" &>/dev/null
 
 			sshpass -p "$password" rsync -arzE --rsh ssh "$HOME/Movies" "$remote:$HOME" &>/dev/null
 
@@ -283,7 +278,7 @@ buildRepository() {
 		--exclude="UserData/XcodeCloud" \
 		--exclude="UserData/IDEEditorInteractivityHistory" \
 		--exclude="UserData/IDEFindNavigatorScopes.plist" \
-		\	 --exclude="/Products" \
+		--exclude="/Products" \
 		--exclude="/XCPGDevices" \
 		--exclude="/XCTestDevices" \
 		--exclude="/* DeviceSupport" \
@@ -313,16 +308,6 @@ buildRepository() {
 		--exclude="*-ca-bundle" \
 		--exclude="sublime_geedbla_environment.txt" \
 		"$HOME/Library/Application Support/Sublime Text/Packages/User" "$HOME/Downloads/dotfiles/Sublime Text/Packages" &>/dev/null
-
-	rsync -arz -E --exclude="Lib" \
-		--exclude="Index" \
-		--exclude="Log" \
-		--exclude="Cache" \
-		--exclude="Installed Packages" \
-		--exclude="User/oscrypto-ca-bundle.crt" \
-		--exclude="Local/Session.sublime_session" \
-		--delete \
-		"$HOME/Library/Application Support/Sublime Merge" "$HOME/Downloads/dotfiles" &>/dev/null
 
 	for preference_file in "${preference_files[@]}"; do
 		rsync -arz -E "$HOME/Library/Preferences/$preference_file" "$HOME/Downloads/dotfiles/preferences" &>/dev/null
