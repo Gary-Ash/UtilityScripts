@@ -6,7 +6,7 @@
 #
 # Author   :  Gary Ash <gary.ash@icloud.com>
 # Created  :  28-Apr-2024  10:00pm
-# Modified :  24-May-2024  7:02pm
+# Modified :  10-Jun-2024  9:32pm
 #
 # Copyright © 2024 By Gary Ash All rights reserved.
 #*****************************************************************************************
@@ -86,7 +86,6 @@ error_log="$TMPDIR/Error.txt"
 kill-everything
 
 cd ~ || return
-refresh-compile-commands.sh
 
 #*****************************************************************************************
 # brew
@@ -107,6 +106,7 @@ if command -v brew &>/dev/null; then
 	SUDO_PASSWORD=$(get_sudo_password)
 	start_persistant_sudo "$SUDO_PASSWORD"
 
+	sudo chown -R root:wheel /opt/geedbla/* &>/dev/null
 	sudo chown -R root:wheel /Applications/* &>/dev/null
 	sudo chmod -R 755 /Applications/* &>/dev/null
 	sudo xattr -cr /Applications/* &>/dev/null
@@ -259,8 +259,8 @@ our @plistKeysToDelete = (
     "IDEProvisioningTeamManagerLastSelectedTeamID",                   "BKRecentsLastCleared",                                          "BKPreviouslyOpenedBookIDs",                                                                                             "RecentMoveAndCopyDestinations",
     "DownloadsFolderListViewSettingsVersion",                         "recent_viewed",                                                 "RecentsArrangeGroupViewBy",                                                                                             "IDEAppChooserRecentApplications-My Mac",
     "RecentRegions",                                                  "IDEFileTemplateChooserAssistantSelectedTemplateName_macOS",     "lastSource",                                                                                                            "lastReplacement",
-    "lastRegex",                                                      "TSARecentOpenedDocumentTimestamps",     			               "TSAOpenedTemplates.Numbers",
-    "RecentItemsData",                                                                                        "TSAOpenedTemplates.Pages"
+    "lastRegex",                                                      "TSARecentOpenedDocumentTimestamps",                             "TSAOpenedTemplates.Numbers",                                                                                            "RecentItemsData",
+    "TSAOpenedTemplates.Pages"
 );
 
 our @itemsToDelete = (
@@ -269,6 +269,7 @@ our @itemsToDelete = (
     ["$HOME/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ProjectsItems.sfl3",                          0],
     ["$HOME/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.RecentApplications.sfl3",                     0],
     ["$HOME/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.RecentServers.sfl3",                          0],
+    ["$HOME/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.RecentHosts.sfl3",                            0],
     ["$HOME/Library/Preferences/com.googlecode.iterm2.private.plist",                                                                     0],
     ["$HOME/Library/Preferences/com.apple.dock.extra.plist",                                                                              0],
     ["$HOME/.proxyman-data",                                                                                                              0],
@@ -285,7 +286,6 @@ our @itemsToDelete = (
     ["$HOME/.python_history",                                                                                                             0],
     ["$HOME/.zcompcache",                                                                                                                 0],
     ["$HOME/.zsh_history",                                                                                                                0],
-    ["$HOME/config/zsh/.zsh_history",                                                                                                     0],
     ["$HOME/.local",                                                                                                                      0],
     ["$HOME/.bundle",                                                                                                                     0],
     ["$HOME/.gem",                                                                                                                        0],
@@ -366,7 +366,7 @@ our @itemsToDelete = (
     ["$HOME/Library/Application Support/Sublime Text/Index",                                                                              1],
     ["$HOME/Library/Application Support/Sublime Text/Log",                                                                                0],
     ["$HOME/Library/Application Support/Sublime Text/Trash",                                                                              0],
-    ["$HOME/Library/Application Support/Sublime Text/Local/Backup Auto Save Session.sublime_session",                          			  0],
+    ["$HOME/Library/Application Support/Sublime Text/Local/Backup Auto Save Session.sublime_session",                                     0],
     ["$HOME/Library/Application Support/Sublime Text/Local/Backup Session.sublime_session",                                               0],
     ["$HOME/Library/Application Support/Sublime Text/Packages/User/Package Control.cache",                                                1],
     ["$HOME/Library/Application Support/Sublime Text (Safe Mode)",                                                                        0],
@@ -425,7 +425,7 @@ our @itemsToDelete = (
     ["$HOME/Library/Containers/com.runisoft.Video-Joiner-and-Merger/Data/Library/Preferences/com.runisoft.Video-Joiner-and-Merger.plist", 0],
     ["$HOME/Library/Containers/com.bridgetech.asset-catalog/Data/Library/Application Support/saved_asset_catalog_creator",                0],
     ["$HOME/Library/Caches/com.apple.Music/SubscriptionPlayCache/",                                                                       0],
-    ["$HOME/Library/Application Support/iTerm2/SavedState/lock", 																		  0],
+    ["$HOME/Library/Application Support/iTerm2/SavedState/lock",                                                                          0],
 );
 
 #*****************************************************************************************
@@ -439,7 +439,7 @@ plists();
 deleteFilesAndFolders();
 xcode();
 sublimeText();
-#sublimeMerge();
+sublimeMerge();
 
 #*****************************************************************************************
 # Books
@@ -462,9 +462,8 @@ sub books {
 # Sublime Text
 #*****************************************************************************************
 sub sublimeText {
-    my $filename = "$HOME/Library/Application Support/Sublime Text/Local/Session.sublime_session";
-    my @keysToDelete
-      = ("auto_complete", "file_history", "replace", "find_state", "find_in_files", "project", "buffers", "command_palette", "expanded_folders" . "workspace_name", "folders", "console", "groups");
+    my $filename     = "$HOME/Library/Application Support/Sublime Text/Local/Session.sublime_session";
+    my @keysToDelete = ("auto_complete", "file_history", "replace", "find_state", "find_in_files", "project", "buffers", "command_palette", "expanded_folders" . "workspace_name", "folders", "console", "groups");
 
     if (-e $filename) {
         open(my $configFile, "<", $filename);
@@ -508,10 +507,10 @@ sub sublimeText {
         close($configFile);
     }
 
-   my $plistFile = "$HOME/Library/Preferences/com.sublimetext.4.plist";
-   my $plist     = NSMutableDictionary->dictionaryWithContentsOfFile_($plistFile);
-   $plist->setObject_forKey_("$HOME/Developer/", "NSNavLastRootDirectory");
-   $plist->writeToFile_atomically_($plistFile, "0");
+    my $plistFile = "$HOME/Library/Preferences/com.sublimetext.4.plist";
+    my $plist     = NSMutableDictionary->dictionaryWithContentsOfFile_($plistFile);
+    $plist->setObject_forKey_("$HOME/Developer/", "NSNavLastRootDirectory");
+    $plist->writeToFile_atomically_($plistFile, "0");
 }
 
 #*****************************************************************************************
@@ -531,17 +530,17 @@ sub sublimeMerge {
         for my $key (@keysToDelete) {
             delete $config->{$key};
         }
-        $config->{"project_dir"}        = "$HOME/Developer";
-        $json                           = encode_json($config);
+        $config->{"project_dir"} = "$HOME/Developer";
+        $json = encode_json($config);
         open($configFile, ">:encoding(UTF-8)", $filename);
         print $configFile $json;
         close($configFile);
     }
 
-   my $plistFile = "$HOME/Library/Preferences/com.sublimemerge.plist";
-   my $plist     = NSMutableDictionary->dictionaryWithContentsOfFile_($plistFile);
-   $plist->setObject_forKey_("$HOME/Developer/", "NSNavLastRootDirectory");
-   $plist->writeToFile_atomically_($plistFile, "0");
+    my $plistFile = "$HOME/Library/Preferences/com.sublimemerge.plist";
+    my $plist     = NSMutableDictionary->dictionaryWithContentsOfFile_($plistFile);
+    $plist->setObject_forKey_("$HOME/Developer/", "NSNavLastRootDirectory");
+    $plist->writeToFile_atomically_($plistFile, "0");
 }
 
 #*****************************************************************************************
@@ -588,7 +587,7 @@ sub podcastapp {
 # process the plists in the Preferences folder
 #*****************************************************************************************
 sub plists {
-	`killall Dock Finder`;
+    `killall Dock Finder`;
     foreach my $plistFile (glob "$HOME/Library/Preferences/*.plist") {
         eval {
             my $plistData = NSMutableDictionary->dictionaryWithContentsOfFile_($plistFile);
@@ -612,7 +611,7 @@ sub deleteFilesAndFolders {
         keep_root => 1
     );
 
-   	`killall Dock Finder`;
+    `killall Dock Finder`;
     for my $item (0 .. $#itemsToDelete) {
         my $i                         = "\"" . $itemsToDelete[$item][0] . "\"";
         my @actualFilesAndDirectories = glob $i;
@@ -651,7 +650,7 @@ sub xcode {
         foreach my $key (keys %templateOptions) {
             $options->setObject_forKey_($templateOptions{$key}, $key);
         }
-        $plist->setObject_forKey_($options,       "IDETemplateOptions");
+        $plist->setObject_forKey_($options,           "IDETemplateOptions");
         $plist->setObject_forKey_("$HOME/Developer/", "NSNavLastRootDirectory");
         $plist->writeToFile_atomically_($plistFile, "0");
     }
@@ -683,351 +682,43 @@ sub processFiles {
 }
 PERL
 
-#*****************************************************************************************
-# get Safari bookmarks get use a tool to hunt junk cookies in the Safari cleaner
-#*****************************************************************************************
-getBookmarks() {
-	perl <<"GEETBOOKMARKS"
-use strict;
-use Foundation;
-
-my @bookmarks;
-
-sub getBookmarks {
-    my $newline = sprintf('%c', 10);
-
-    sub processChildren {
-        my $children = shift;
-        for (my $itemIndex = 0;$itemIndex < $children->count;++$itemIndex) {
-            my $item = $children->objectAtIndex_($itemIndex);
-            if ($item && $$item) {
-                my $url = $item->objectForKey_('URLString');
-                if ($url && $$url) {
-                    my $nsurl = NSURL->URLWithString_($url);
-                    my $input = $nsurl->host()->UTF8String;
-                    my $firstdot = index($input, '.');
-                    my $lastdot = rindex($input, '.');
-
-                    if ($firstdot > -1 && $firstdot != $lastdot) {
-                        $input = substr($input, $firstdot + 1);
-                    }
-                    $input .= $newline;
-                    push(@bookmarks, $input);
-                  }
-                my $nextChildren = $item->objectForKey_('Children');
-                if ($nextChildren && $$nextChildren) {
-                    processChildren($nextChildren);
-                }
-            }
-        }
-    }
-    my $bookmarkFile = $ENV{'HOME'} .'/Library/Safari/bookmarks.plist';
-    my $bookmarkPlist = NSDictionary->dictionaryWithContentsOfFile_($bookmarkFile);
-    if ($bookmarkPlist && $$bookmarkPlist) {
-        my $children = $bookmarkPlist->objectForKey_('Children');
-        processChildren($children);
-    }
-}
-
-getBookmarks();
-
-my $HOME = $ENV{"HOME"};
-for my $file (<$HOME/Library/Safari/LocalStorage/*>) {
-    my $found = 0;
-    for my $bookkmark (@bookmarks) {
-        if (index($file,, $bookkmark) != -1) {
-            $found = 1;
-            last;
-        }
-        if ($found == 0) {
-            unlink($file);
-        }
-    }
-}
-
-print @bookmarks;
-GEETBOOKMARKS
-}
-
-output=$(getBookmarks)
 osascript <<END
-(*****************************************************************************************
- * clean Safari
- ****************************************************************************************)
-set keepingSites to {¬
-	"atlassian.com", ¬
-	"atlassian.net", ¬
-	"bing.com", ¬
-	"live.com", ¬
-	"duckduckgo.com", ¬
-	"discord.com", ¬
-	"discordapp.com", ¬
-	"stackexchange.com", ¬
-	"sublimehq.com", ¬
-	"zenhub.com", ¬
-	"app.zenhub.com", ¬
-	"stackoverflow.com", ¬
-	"apple.stackexchange.com", ¬
-	"twitch.tv", ¬
-	"superuser.com"}
-
-set deleteAnyway to {¬
-	"avanderlee.com", ¬
-	"jessesquires.com", ¬
-	"t.co", ¬
-	"cbr.com", ¬
-	"devhints.io", ¬
-	"iosref.com", ¬
-	"costco.com", ¬
-	"ios-factor.com", ¬
-	"iosfeeds.com", ¬
-	"qualitycoding.org", ¬
-	"2dgameartguru.com", ¬
-	"9to5mac.com", ¬
-	"macpaw.com", ¬
-	"angel.co", ¬
-	"blendswap.com", ¬
-	"codeandweb.com", ¬
-	"comicscontinuum.com", ¬
-	"emailtemp.org", ¬
-	"redd.it", ¬
-	"agner.org", ¬
-	"swiftpm.co", ¬
-	"swiftpm.com", ¬
-	"swiftbysundell.com", ¬
-	"swiftjectivec.com", ¬
-	"mapeditor.org", ¬
-	"udemy.com", ¬
-	"fandom.com", ¬
-	"wtfautolayout.com", ¬
-	"71squared.com", ¬
-	"beautifyconverter.com", ¬
-	"freeformatter.com", ¬
-	"sanctum.geek.nz", ¬
-	"graphicriver.net", ¬
-	"stclairsoft.com", ¬
-	"jscreenfix.com", ¬
-	"johncodeos.com", ¬
-	"opengameart.org", ¬
-	"sqlitebrowser.org", ¬
-	"pfiddlesoft.com", ¬
-	"geedbla.com", ¬
-	"gitignore.io", ¬
-	"packagecontrol.io", ¬
-	"probot.github.io", ¬
-	"jamendo.com", ¬
-	"tutsplus.com", ¬
-	"itch.io", ¬
-	"nshipster.com", ¬
-	"testableapple.com", ¬
-	"iterm2.com", ¬
-	"shields.io", ¬
-	"codewars.com", ¬
-	"upwork.com", ¬
-	"escapistmagazine.com"}
-
-(*========================================================================================
- *
- *======================================================================================*)
-set bookmarks to paragraphs of "$output"
 try
-	tell application "Safari" to quit
-	delay 3
-	tell application "Safari" to activate
-	delay 3
-
-	set defaultDelim to AppleScript's text item delimiters
-	set AppleScript's text item delimiters to " "
+	tell application "Keyboard Maestro Engine" to quit
 end try
-(*=========================================================================================
- *
- *=======================================================================================*)
-tell application "System Events" to tell process "Safari"
-	set frontmost to true
-	try
-		if exists radio button 1 of radio group 1 of group 1 of splitter group 1 of window 1 then
-			click radio button 1 of radio group 1 of group 1 of splitter group 1 of window 1
-			delay 1
-			tell application "Safari" to activate
-			click button 1 of toolbar 1 of window 1
-		end if
+(*****************************************************************************************
+ * clean  Safari
+ ****************************************************************************************)
+ tell application "Safari"
+	activate
+	delay 0.5
+	tell application "System Events" to tell process "Safari"
+		keystroke "y" using {command down}
+		delay 0.1
+		activate
+		set frontmost to true
 
-		click menu item "Hide History" of menu 1 of menu bar item "History" of menu bar 1
+		click menu item "Select All" of menu 1 of menu bar item "Edit" of menu bar 1
+		delay 0.3
+		activate
+		set frontmost to true
+		keystroke (ASCII character 127)
+
+		delay 0.3
+		activate
+		set frontmost to true
+		keystroke "y" using {command down}
+
 		try
 			click menu item "Sync iCloud History" of menu 1 of menu bar item "Debug" of menu bar 1
 			delay 6
 		end try
 
-		tell application "Safari" to activate
-		click button "Show Search Menu" of group 6 of toolbar 1 of window 1
-		delay 0.1
-		set row_index to 1
-		set number_items to number of rows in table 1 of scroll area 1 of group 5 of toolbar 1 of window 1
-		select row row_index of table 1 of scroll area 1 of group 5 of toolbar 1 of window 1
-
-		repeat until row_index = number_items
-			tell application "Safari" to activate
-
-			key code 125
-			set row_index to row_index + 1
-		end repeat
-		if row_index > 4 then
-			key code 36
-		else
-			key code 53
-		end if
-		delay 0.1
-		tell application "Safari" to activate
-	end try
-
-	try
-		tell application "Safari" to activate
-		click UI element 11 of toolbar 1 of window "Start Page" of application process "Safari"
-		delay 0.2
-		tell application "Safari" to activate
-		click UI element 1 of UI element 1 of row 1 of table 1 of scroll area 1 of window "Start Page" of application process "Safari"
-	end try
-
-	click menu item "Show All History" of menu 1 of menu bar item "History" of menu bar 1
-	delay 0.2
-	tell application "Safari" to activate
-	try
-		keystroke "a" using command down
-		keystroke (ASCII character 127)
-		delay 1
-	end try
-
-	tell application "Safari" to activate
-	click menu item "Hide History" of menu 1 of menu bar item "History" of menu bar 1
-	try
-		click menu item "Sync iCloud History" of menu 1 of menu bar item "Debug" of menu bar 1
-	end try
-end tell
-
-(*========================================================================================
- *
- *======================================================================================*)
-tell application "System Events" to tell process "Safari"
-	set frontmost to true
-
-	keystroke "," using {command down}
-	delay 0.2
-	tell application "Safari" to activate
-	click button 7 of toolbar 1 of the first window
-	click button "Manage Website Data…" of group 1 of group 1 of window 1
-	repeat
-		set numberItems to number of rows of table 1 of scroll area 1 of sheet 1 of window 1
-		if numberItems > 10 then
-			exit repeat
-		end if
-		delay 6
-	end repeat
-	keystroke tab
-end tell
-
-(*========================================================================================
- *
- *=======================================================================================*)
-set deleteFlag to 1
-set rowIndex to 1
-
-repeat while true
-	tell application "System Events" to tell process "Safari"
+		activate
 		set frontmost to true
-
-		try
-			select row rowIndex of table 1 of scroll area 1 of sheet 1 of window 1
-			delay 0.01
-			tell application "Safari" to activate
-
-			set r to row rowIndex of table 1 of scroll area 1 of sheet 1 of window 1
-			set txt to (get value of static text 1 of UI element 1 of r) as string
-		on error msg number errNum
-			if errNum = -1719 then
-				if deleteFlag = 1 then
-					set rowIndex to 1
-					set deleteFlag to 0
-				else
-					set AppleScript's text item delimiters to defaultDelim
-					exit repeat
-				end if
-			end if
-		end try
+		keystroke "q" using {command down}
 	end tell
-
-	set deleteFlag to 1
-
-	repeat with bookmark in bookmarks
-		set bookmark to bookmark as string
-		--display dialog bookmark
-		if txt is equal to bookmark then
-			set deleteFlag to 0
-			exit repeat
-		end if
-	end repeat
-
-	repeat with deleteIt in deleteAnyway
-		set deleteIt to deleteIt as string
-		if txt is equal to deleteIt then
-			set deleteFlag to 1
-			exit repeat
-		end if
-	end repeat
-
-	repeat with keepIt in keepingSites
-		set keepIt to keepIt as string
-		if txt is equal to keepIt then
-			set deleteFlag to 0
-			exit repeat
-		end if
-	end repeat
-
-	tell application "System Events" to tell process "Safari"
-		if deleteFlag = 1 then
-			try
-				click button "Remove" of sheet 1 of window "Privacy"
-			on error msg number errNum
-				tell application "Safari" to activate
-				key code 125
-				set deletedFlag to 0
-				set rowIndex to rowIndex + 1
-			end try
-		else
-			try
-				tell application "Safari" to activate
-				key code 125
-				set deletedFlag to 0
-				set rowIndex to rowIndex + 1
-			on error msg number errNum
-			end try
-		end if
-	end tell
-end repeat
-
-(*========================================================================================
- *
- *=======================================================================================*)
-tell application "System Events" to tell process "Safari"
-	tell application "Safari" to activate
-	try
-		select row 1 of table 1 of scroll area 1 of sheet 1 of window 1
-	end try
-	key code 125
-	delay 0.01
-	tell application "Safari" to activate
-	click button "Done" of sheet 1 of window "Privacy"
-	delay 0.5
-	tell application "Safari" to activate
-	click button 1 of toolbar 1 of the first window
-	delay 0.3
-	click button 1 of window 1
-	delay 0.5
-	tell application "Safari" to quit
 end tell
-
-try
-	tell application "Keyboard Maestro Engine" to quit
-end try
 
 (*****************************************************************************************
  * clean  Mail
@@ -1359,7 +1050,6 @@ if [[ $OCD_OPTION == "restart" ]] || [[ $OCD_OPTION == "off" ]]; then
 	atsutil server -ping &>/dev/null
 fi
 
-defaults delete com.apple.Safari IncludeInternalDebugMenu
 defaults write com.apple.finder DownloadsFolderListViewSettingsVersion 1
 
 cat <<"XCODE_BREAKPOINTS" >"$HOME/Library/Developer/Xcode/UserData/xcdebugger/Breakpoints_v2.xcbkptlist"
@@ -1406,6 +1096,8 @@ cat <<"XCODE_BREAKPOINTS" >"$HOME/Library/Developer/Xcode/UserData/xcdebugger/Br
 </Bucket>
 XCODE_BREAKPOINTS
 rm -f "${HISTFILE}" &>/dev/null
+
+defaults delete com.apple.Safari IncludeInternalDebugMenu
 
 mkdir -p "$XDG_CACHE_HOME/zsh"
 #*****************************************************************************************

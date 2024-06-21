@@ -58,7 +58,9 @@ sync() {
 		"$HOME/Pictures"
 		"$HOME/Documents"
 		"$HOME/Developer"
+		"$HOME/Library/Application Support/BBEdit"
 		"/opt/geedbla"
+		"$HOME/Library/Containers/com.barebones.bbedit/Data/Library/Preferences/com.barebones.bbedit.plist"
 	)
 
 	local apps=(
@@ -184,13 +186,8 @@ sync() {
 
 			dot-files "" "sshpass"
 			for preference_file in "${preference_files[@]}"; do
-				sshpass -p "$password" rsync -arz --rsh=ssh "$HOME/Library/Preferences/$preference_file" "$remote:$HOME/Library/Preferences" &>/dev/null
+				sshpass -p "$password" rsync -arz -E --rsh=ssh "$HOME/Library/Preferences/$preference_file" "$remote:$HOME/Library/Preferences" &>/dev/null
 			done
-
-			sshpass -p "$password" rsync -arz --rsh=ssh "$HOME/Library/Containers/com.apple.mail/Data/Library/Preferences/com.apple.mail.plist" \
-				"$remote:$HOME/Library/Containers/com.apple.mail/Data/Library/Preferences/com.apple.mail.plist"
-			sshpass -p "$password" rsync -arz --rsh=ssh "$HOME/Library/Mail/" \
-				"$remote:$HOME/Library/Mail/"
 
 			sshpass -p "$password" rsync -arz -E \
 				--exclude="UserData/Capabilities" \
@@ -251,7 +248,6 @@ sync() {
 			sshpass -p "$password" ssh -t "$remote" "echo $password | sudo -S chmod -R 755 /Applications/*" &>/dev/null
 		fi
 	done
-
 }
 
 #****************************************************************************************
@@ -467,4 +463,5 @@ if [ $# -gt 0 ]; then
 	esac
 else
 	sync
+	exit 0
 fi

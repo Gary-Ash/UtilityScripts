@@ -6,7 +6,7 @@
 #
 # Author   :  Gary Ash <gary.ash@icloud.com>
 # Created  :  28-Apr-2024  10:00pm
-# Modified :
+# Modified :  21-Jun-2024 12:29pm
 #
 # Copyright © 2024 By Gary Ash All rights reserved.
 #*****************************************************************************************
@@ -101,6 +101,7 @@ elsif ($os_version[1] =~ /11.*/)    { $os_version[0] = "macOS Big Sur"; }
 elsif ($os_version[1] =~ /12.*/)    { $os_version[0] = "macOS Monterey"; }
 elsif ($os_version[1] =~ /13.*/)    { $os_version[0] = "macOS Ventura"; }
 elsif ($os_version[1] =~ /14.*/)    { $os_version[0] = "macOS Sonoma"; }
+elsif ($os_version[1] =~ /15.*/)    { $os_version[0] = "macOS  Sequoia"; }
 
 $results[0] = "$os_version[0] $os_version[1] $os_version[2]";
 push @specs, "OS           : $results[0]";

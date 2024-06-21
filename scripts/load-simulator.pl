@@ -35,9 +35,10 @@ find(\&addMedia, $media);
 
 `xcrun simctl shutdown all;xcrun simctl delete unavailable;xcrun simctl erase all`;
 for (keys %simulators) {
-    `xcrun simctl boot "$_" &> /dev/null`;
-    if (system("xcrun simctl addmedia $simulators{$_} $mediaList &> /dev/null") != 0) {
-        print "**** Error loading simulator\n";
+    if (system("xcrun simctl boot \"$_\"") !=0) {
+        exit(1);
+    }
+    if (system("xcrun simctl addmedia $simulators{$_} $mediaList") != 0) {
         exit(1);
     }
 }
@@ -60,12 +61,12 @@ sub getSimulators {
 }
 
 #*****************************************************************************************
-# this routine will load a media into the current simulator
+# this routine will build a list of all the media in the SimulatorBackup folder 
 #*****************************************************************************************
 sub addMedia {
-    return if $_ eq "." or $_ eq ".." or $_ eq ".DS_Store";
+	return if $_ =~ /^\..*/;
     return if !-f $_;
-
+        
     if ($mediaList ne "") {
         $mediaList .= " ";
     }
