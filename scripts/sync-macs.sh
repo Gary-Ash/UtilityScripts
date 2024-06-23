@@ -219,6 +219,13 @@ sync() {
 				"$HOME/Library/Application Support/Sublime Text" \
 				"$remote:$HOME/Library/Application\\ Support/" &>/dev/null
 
+			sshpass -p "$password" rsync -arz -E --rsh=ssh \
+				--exclude="Cache" \
+				--exclude="User/oscrypto-ca-bundle.crt" \
+				--delete \
+				"$HOME/Library/Application Support/Sublime Merge" \
+				"$remote:$HOME/Library/Application\\ Support/" &>/dev/null
+
 			sshpass -p "$password" ssh -t "$remote" "echo $password | sudo -S killall Dock" &>/dev/null
 
 			sshpass -p "$password" rsync -arzE --rsh ssh "$HOME/Movies" "$remote:$HOME" &>/dev/null
@@ -304,6 +311,16 @@ buildRepository() {
 		--exclude="*-ca-bundle" \
 		--exclude="sublime_geedbla_environment.txt" \
 		"$HOME/Library/Application Support/Sublime Text/Packages/User" "$HOME/Downloads/dotfiles/Sublime Text/Packages" &>/dev/null
+
+	rsync -arz -E --exclude="Lib" \
+		--exclude="Index" \
+		--exclude="Log" \
+		--exclude="Cache" \
+		--exclude="Installed Packages" \
+		--exclude="User/oscrypto-ca-bundle.crt" \
+		--exclude="Local/Session.sublime_session" \
+		--delete \
+		"$HOME/Library/Application Support/Sublime Merge" "$HOME/Downloads/dotfiles" &>/dev/null
 
 	for preference_file in "${preference_files[@]}"; do
 		rsync -arz -E "$HOME/Library/Preferences/$preference_file" "$HOME/Downloads/dotfiles/preferences" &>/dev/null
