@@ -6,7 +6,7 @@
 #
 # Author   :  Gary Ash <gary.ash@icloud.com>
 # Created  :  28-Apr-2024  10:00pm
-# Modified :  10-Jun-2024  9:32pm
+# Modified :  23-Jun-2024  4:29pm
 #
 # Copyright © 2024 By Gary Ash All rights reserved.
 #*****************************************************************************************
@@ -106,7 +106,7 @@ if command -v brew &>/dev/null; then
 	SUDO_PASSWORD=$(get_sudo_password)
 	start_persistant_sudo "$SUDO_PASSWORD"
 
-	sudo chown -R root:wheel /opt/geedbla/* &>/dev/null
+	sudo chown -R garyash:staff /opt/geedbla/* &>/dev/null
 	sudo chown -R root:wheel /Applications/* &>/dev/null
 	sudo chmod -R 755 /Applications/* &>/dev/null
 	sudo xattr -cr /Applications/* &>/dev/null
