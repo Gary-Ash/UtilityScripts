@@ -7,7 +7,7 @@
 #
 # Author   :  Gary Ash <gary.ash@icloud.com>
 # Created  :  28-Apr-2024  10:00pm
-# Modified :  25-May-2024  8:19pm
+# Modified :  24-Jun-2024   4:04pm
 #
 # Copyright © 2024 By Gary Ash All rights reserved.
 #*****************************************************************************************
@@ -37,8 +37,8 @@ updateGitHub() {
 
 	if git clone --quiet --recurse-submodules git@github.com:Gary-Ash/dotfiles.git "$HOME/Downloads/dotfiles/"; then
 		cd "$HOME/Downloads/dotfiles/" || return 1
-
 		git-crypt unlock
+		git submodule update --recursive --remote
 		buildRepository
 	else
 		echo "Unable to update the repository"
